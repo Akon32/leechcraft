@@ -114,6 +114,7 @@ OPTION (ENABLE_JUFFED "Build JuffEd, the advanced text editor" OFF)
 OPTION (ENABLE_GMAILNOTIFIER "Build GMail Notifier which notifies about new mail in your GMail inbox" OFF)
 OPTION (ENABLE_OTZERKALU "Build Otzerkalu, which allows to download web sites recursively" OFF)
 OPTION (ENABLE_ADVANCEDNOTIFICATIONS "Build Advanced Notifications module for more customizable notifications" OFF)
+OPTION (ENABLE_QUICKLAUNCH "Build quick launcher plugin" OFF)
 ENABLE_TESTING ()
 
 FUNCTION (CreateTrVars PlugName Langs TranVar CompiledTranVar)
@@ -256,6 +257,10 @@ ENDIF (ENABLE_OTZERKALU)
 IF (ENABLE_ADVANCEDNOTIFICATIONS)
 	ADD_SUBDIRECTORY (plugins/advancednotifications)
 ENDIF (ENABLE_ADVANCEDNOTIFICATIONS)
+
+IF (ENABLE_QUICKLAUNCH)
+	ADD_SUBDIRECTORY (plugins/quicklaunch)
+ENDIF (ENABLE_QUICKLAUNCH)
 
 SET (QT_USE_QTNETWORK TRUE)
 SET (QT_USE_QTXML TRUE)
