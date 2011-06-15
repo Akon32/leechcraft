@@ -16,18 +16,42 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  **********************************************************************/
 
-#ifndef PLUGINS_AZOTH_UTIL_H
-#define PLUGINS_AZOTH_UTIL_H
+#ifndef PLUGINS_AZOTH_PLUGINS_XOOX_FETCHQUEUE_H
+#define PLUGINS_AZOTH_PLUGINS_XOOX_FETCHQUEUE_H
+#include <boost/function.hpp>
+#include <QObject>
+#include <QStringList>
+
+class QTimer;
 
 namespace LeechCraft
 {
-struct Entity;
-
 namespace Azoth
 {
-	class ICLEntry;
-
-	void BuildNotification (Entity&, ICLEntry*);
+namespace Xoox
+{
+	class FetchQueue : public QObject
+	{
+		Q_OBJECT
+		
+		QTimer *FetchTimer_;
+		QStringList Queue_;
+		boost::function<void (const QString&)> FetchFunction_;
+		int PerShot_;
+	public:
+		enum Priority
+		{
+			PHigh,
+			PLow
+		};
+		FetchQueue (boost::function<void (const QString&)> func,
+				int timeout, int perShot, QObject* = 0);
+		
+		void Schedule (const QString&, Priority = PLow);
+	private slots:
+		void handleFetch ();
+	};
+}
 }
 }
 
