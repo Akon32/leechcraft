@@ -77,6 +77,7 @@ namespace SecureStorage
 	Plugin::Plugin ()
 	: WindowTitle_ ("SecMan SecureStorage")
 	, CryptoSystem_ (0)
+	, PasswordDialogShown_ (false)
 	{
 	}
 
@@ -300,28 +301,52 @@ namespace SecureStorage
 		if (!CryptoSystem_)
 		{
 			if (IsPasswordEmpty ())
+				// do not ask password
 				SetCryptoSystem (new CryptoSystem (""));
 			else
 			{
-				QInputDialog dialog;
-				dialog.setTextEchoMode (QLineEdit::Password);
-				dialog.setWindowTitle (WindowTitle_);
-				dialog.setLabelText (tr ("Enter master password:"));
-				while (true)
+				if (PasswordDialogShown_)
 				{
-					if (dialog.exec () != QDialog::Accepted)
+					// dialog already shown, wait for it.
+					QEventLoop loop;
+					connect (this,
+							SIGNAL (passwordDialogClosed ()),
+							&loop,
+							SLOT (quit ()));
+					loop.exec ();
+					// if password has not set, throw exception.
+					if (!CryptoSystem_)
 						throw PasswordNotEnteredException ();
-
-					QString password = dialog.textValue ();
-					CryptoSystem *cs = new CryptoSystem (password);
-					if (IsPasswordCorrect (*cs))
+				}
+				else
+				{
+					// show password dialog.
+					QInputDialog dialog;
+					dialog.setTextEchoMode (QLineEdit::Password);
+					dialog.setWindowTitle (WindowTitle_);
+					dialog.setLabelText (tr ("Enter master password:"));
+					while (true)
 					{
-						SetCryptoSystem (cs);
-						break;
+						PasswordDialogShown_ = true;
+						int result = dialog.exec ();
+						PasswordDialogShown_ = false;
+						if (result != QDialog::Accepted)
+						{
+							emit passwordDialogClosed ();
+							throw PasswordNotEnteredException ();
+						}
+						QString password = dialog.textValue ();
+						CryptoSystem *cs = new CryptoSystem (password);
+						if (IsPasswordCorrect (*cs))
+						{
+							SetCryptoSystem (cs);
+							emit passwordDialogClosed ();
+							break;
+						}
+						else // continue
+							dialog.setLabelText (tr ("Wrong password.\n"
+									"Try enter master password again:"));
 					}
-					else // continue
-						dialog.setLabelText (tr ("Wrong password.\n"
-								"Try enter master password again:"));
 				}
 			}
 		}

@@ -61,6 +61,8 @@ namespace SecureStorage
 		CryptoSystem *CryptoSystem_;
 		
 		QAction *ForgetKeyAction_;
+		
+		bool PasswordDialogShown_;
 	public:
 		Plugin ();
 		void Init (ICoreProxy_ptr);
@@ -86,6 +88,8 @@ namespace SecureStorage
 		void forgetKey ();
 		void changePassword ();
 		void clearSettings ();
+	signals:
+		void passwordDialogClosed ();
 	private:
 		const CryptoSystem& GetCryptoSystem ();
 		void SetCryptoSystem (CryptoSystem *cs);
